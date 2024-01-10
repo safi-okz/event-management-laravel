@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use \App\Models\Event;
 
 class EventController extends Controller
 {
@@ -12,7 +13,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        //
+        return Event::all();
     }
 
     /**
@@ -20,30 +21,56 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+                "name" => "required|string|max:255",
+                "description" => "nullable|string",
+                'start_time' => 'required|date',
+                "end_time" => "required|date"
+            ]);
+
+            $validatedData['user_id'] = 1;
+
+            // Create the event using the validated data
+            $event = Event::create($validatedData);
+
+        return $event;
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Event $event)
     {
-        //
+        return $event;
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Event $event)
     {
-        //
+        $validatedData = $request->validate([
+            "name" => "sometimes|string|max:255",
+            "description" => "nullable|string",
+            'start_time' => 'sometimes|date',
+            "end_time" => "sometimes|date"
+        ]);
+
+        // Create the event using the validated data
+
+        $event->update($validatedData);
+        return $event;
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Event $event)
     {
-        //
+        $event->delete();
+
+        return response()->json([
+            "message"=> "Event deleted successfully"
+        ]);
     }
 }
