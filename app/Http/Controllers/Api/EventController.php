@@ -6,12 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use \App\Models\Event;
 use \App\Http\Resources\EventResource;
+use Illuminate\Support\Facades\Gate;
 
 class EventController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    public function __construct(){
+        $this->middleware('auth:sanctum')->except(['index', 'show']);
+    }
+
     public function index()
     {
         $query = Event::query();
@@ -53,7 +58,7 @@ class EventController extends Controller
                 "end_time" => "required|date"
             ]);
 
-            $validatedData['user_id'] = 1;
+            $validatedData['user_id'] = $request->user()->id;
 
             // Create the event using the validated data
             $event = Event::create($validatedData);
@@ -75,6 +80,12 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
+        // if(Gate::denies('update-event', $event)){
+        //     abort(403, 'You are not authorized to update this event');
+        // }
+
+        $this->authorize('update-event', $event);
+
         $validatedData = $request->validate([
             "name" => "sometimes|string|max:255",
             "description" => "nullable|string",
